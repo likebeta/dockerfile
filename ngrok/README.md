@@ -3,7 +3,7 @@
 ## 构建
 
 ```sh
-docker build -t likebeta/ngrok --build-arg DOMAIN=ngrok.pp.ua
+docker build -t likebeta/ngrok --build-arg DOMAIN=ngrok.pp.ua .
 ```
 
 ## 运行
