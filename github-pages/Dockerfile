@@ -1,8 +1,9 @@
 FROM ruby:2.5.8-alpine
 LABEL MAINTAINER="likebetar<ixxoo.me@gmail.com>"
 
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+RUN gem sources --add https://mirrors.ustc.edu.cn/rubygems/ --remove https://rubygems.org/
 RUN apk --update add --virtual build_deps build-base ruby-dev libc-dev linux-headers && \
-    #gem sources --add https://ruby.taobao.org/ --remove https://rubygems.org/ && \
     gem install --verbose --no-document \
     jekyll:3.8.7 \
     jekyll-sass-converter:1.5.2 \
