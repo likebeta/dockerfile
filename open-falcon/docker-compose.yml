@@ -1,0 +1,77 @@
+version: '3.8'
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME}
+services:
+  mysql:
+    image: falcon-mysql:v5.7.30
+    build: ./falcon-mysql
+    restart: always
+    hostname: falcon-mysql
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    # ports:
+    #   - ${MYSQL_PORT}:3306
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/falcon-mysql/data/db:/var/lib/mysql
+  redis:
+    image: redis:4.0.14-alpine
+    restart: always
+    hostname: falcon-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    # ports:
+    #   - ${REDIS_PORT}:6379
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/falcon-redis/data:/data
+  plus:
+    image: falcon-plus:v0.3
+    build: ./falcon-plus
+    restart: always
+    hostname: falcon-plus
+    command: sh ctrl.sh start graph hbs judge transfer nodata aggregator agent gateway api alarm
+    stdin_open: true
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - 8433:8433
+      - 8080:8080
+    environment:
+      TZ: Asia/Shanghai
+      MYSQL_PORT: root:${MYSQL_ROOT_PASSWORD}@tcp(falcon-mysql:3306)
+      REDIS_PORT: ${REDIS_PASSWORD}@falcon-redis:6379
+    volumes:
+      - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/open-falcon/data:/open-falcon/data
+      - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/open-falcon/logs:/open-falcon/logs
+  dashboard:
+    image: falcon-dashboard:v0.2.1
+    build: ./falcon-dashboard
+    restart: always
+    hostname: falcon-dashboard
+    depends_on:
+      - mysql
+      - redis
+      - plus
+    ports:
+      - 8081:8081
+    environment:
+      TZ: Asia/Shanghai
+      API_ADDR: http://falcon-plus:8080/api/v1
+      PORTAL_DB_HOST: falcon-mysql
+      PORTAL_DB_PORT: 3306
+      PORTAL_DB_USER: root
+      PORTAL_DB_PASS: ${MYSQL_ROOT_PASSWORD}
+      PORTAL_DB_NAME: falcon_portal
+      ALARM_DB_HOST: falcon-mysql
+      ALARM_DB_PORT: 3306
+      ALARM_DB_USER: root
+      ALARM_DB_PASS: ${MYSQL_ROOT_PASSWORD}
+      ALARM_DB_NAME: alarms
+    volumes:
+      - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/falcon-dashboard/logs:/open-falcon/dashboard/var
