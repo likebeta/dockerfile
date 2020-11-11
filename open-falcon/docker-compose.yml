@@ -3,11 +3,12 @@ networks:
   default:
     name: ${COMPOSE_PROJECT_NAME}
 services:
-  mysql:
+  falcon-mysql:
     image: falcon-mysql:v5.7.30
     build: ./falcon-mysql
     restart: always
     hostname: falcon-mysql
+    container_name: falcon-mysql
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     # ports:
     #   - ${MYSQL_PORT}:3306
@@ -18,10 +19,11 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/falcon-mysql/data/db:/var/lib/mysql
-  redis:
+  falcon-redis:
     image: redis:4.0.14-alpine
     restart: always
     hostname: falcon-redis
+    container_name: falcon-redis
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     # ports:
     #   - ${REDIS_PORT}:6379
@@ -29,16 +31,17 @@ services:
       TZ: Asia/Shanghai
     volumes:
       - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/falcon-redis/data:/data
-  plus:
+  falcon-plus:
     image: falcon-plus:v0.3
     build: ./falcon-plus
     restart: always
     hostname: falcon-plus
+    container_name: falcon-plus
     command: sh ctrl.sh start graph hbs judge transfer nodata aggregator agent gateway api alarm
     stdin_open: true
     depends_on:
-      - mysql
-      - redis
+      - falcon-mysql
+      - falcon-redis
     ports:
       - 8433:8433
       - 8080:8080
@@ -49,15 +52,16 @@ services:
     volumes:
       - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/open-falcon/data:/open-falcon/data
       - ${DATA_ROOT}/${COMPOSE_PROJECT_NAME}/open-falcon/logs:/open-falcon/logs
-  dashboard:
+  falcon-dashboard:
     image: falcon-dashboard:v0.2.1
     build: ./falcon-dashboard
     restart: always
     hostname: falcon-dashboard
+    container_name: falcon-dashboard
     depends_on:
-      - mysql
-      - redis
-      - plus
+      - falcon-mysql
+      - falcon-redis
+      - falcon-plus
     ports:
       - 8081:8081
     environment:
