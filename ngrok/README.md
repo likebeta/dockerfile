@@ -17,10 +17,10 @@ docker run -itd --name=ngrok --restart=always -p 80:80 -p 4443:4443 -p 443:443 [
 执行命令进入docker
 
 ```sh
-docker exec -it ngrok /bin/bash
+docker exec -it ngrok /bin/sh
 ```
 
-`/usr/local/ngrok/bin`下有各系统对应的客户端
+中间镜像的`/usr/local/ngrok/bin`下有各系统对应的客户端
 
 ## 说明
 
