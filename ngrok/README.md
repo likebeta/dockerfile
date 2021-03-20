@@ -3,6 +3,13 @@
 ## 构建
 
 ```sh
+# 按需取出客户端
+docker build -t likebeta/ngrok --target builder --build-arg DOMAIN=ngrok.pp.ua .
+docker run -itd --name=ngrok --rm likebeta/ngrok /bin/sh
+docker cp ngrok:/ngrok/bin/windows_amd64/ngrok.exe ./
+docker stop ngrok
+
+# 保留服务端
 docker build -t likebeta/ngrok --build-arg DOMAIN=ngrok.pp.ua .
 ```
 
@@ -13,14 +20,6 @@ docker build -t likebeta/ngrok --build-arg DOMAIN=ngrok.pp.ua .
 ```sh
 docker run -itd --name=ngrok --restart=always -p 80:80 -p 4443:4443 -p 443:443 [IMAGE]
 ```
-
-执行命令进入docker
-
-```sh
-docker exec -it ngrok /bin/sh
-```
-
-中间镜像的`/usr/local/ngrok/bin`下有各系统对应的客户端
 
 ## 说明
 
