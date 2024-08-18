@@ -1,4 +1,4 @@
-# Githb Pages
+# Github Pages
 
 ## 构建
 
